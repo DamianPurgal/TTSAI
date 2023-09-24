@@ -1,0 +1,55 @@
+spring:
+  profiles:
+    active: development
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: development
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: ttsaiadmin
+    url: jdbc:postgresql://localhost:5432/ttsai
+    password: 229grAFOaKM6QFb5Tzdd9L
+  jpa:
+    properties:
+      hibernate:
+        show_sql: 'true'
+    generate-ddl: false
+application:
+  jwt:
+    tokenPrefix: Bearer
+    secretKeyRefreshToken: a59aAD6&^z3HOaum*G2jrJz86zfpB2L4@5!im%nbeRb*rs0rdzL4@5!im%nbeRb*rs0rdz
+    accessTokenExpirationTimeInDays: '10'
+    secretKeyAccessToken: aRyn!%62M2K3%9avIZetx1DMi2&hXCW6^EwbsetZ!#oYXSYC*B5Ryn!%62M2K3%9avIZetx1DMi2&hXCW6^EwbsetZ!#oYXSYC*B
+    refreshTokenExpirationTimeInDays: '30'
+  elevenlabs:
+    apiKey: 04971c8e055966099ecacedc279d0e1e
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: production
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgresDB:5432/ttsai
+    username: ttsaiadmin
+    password: 229grAFOaKM6QFb5Tzdd9L
+  jpa:
+    properties:
+      hibernate:
+        show_sql: 'true'
+    generate-ddl: false
+application:
+  jwt:
+    tokenPrefix: Bearer
+    secretKeyRefreshToken: a59aAD6&^z3HOaum*G2jrJz86zfpB2L4@5!im%nbeRb*rs0rdzL4@5!im%nbeRb*rs0rdz
+    accessTokenExpirationTimeInDays: '10'
+    secretKeyAccessToken: aRyn!%62M2K3%9avIZetx1DMi2&hXCW6^EwbsetZ!#oYXSYC*B5Ryn!%62M2K3%9avIZetx1DMi2&hXCW6^EwbsetZ!#oYXSYC*B
+    refreshTokenExpirationTimeInDays: '30'
+  elevenlabs:
+    apiKey: 04971c8e055966099ecacedc279d0e1e

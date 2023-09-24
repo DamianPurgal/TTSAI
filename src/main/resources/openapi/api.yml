@@ -1,0 +1,211 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: TTSAI
+tags:
+  - name: "Voice"
+  - name: "Request"
+servers:
+  - url: "http://localhost:8080"
+    description: "Local server"
+paths:
+  /voice:
+    get:
+      summary: Get all avaliable voices
+      tags:
+        - "Voice"
+      operationId: getAllVoices
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Voice'
+  /request:
+    get:
+      summary: Get all requests
+      tags:
+        - "Request"
+      operationId: getRequestsPageable
+      parameters:
+        - name: requestDto
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/RequestPageable'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestPage'
+    post:
+      summary: Add request
+      tags:
+        - "Request"
+      operationId: addRequest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+    delete:
+      summary: Delete all requests
+      tags:
+        - "Request"
+      operationId: deleteAllRequests
+      responses:
+        "200":
+          description: "OK"
+  /request/{requestId}:
+    delete:
+      summary: Delete request by id
+      tags:
+        - "Request"
+      operationId: deleteRequestById
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: "OK"
+  /request/{requestId}/status:
+    put:
+      summary: Change request status
+      tags:
+        - "Request"
+      operationId: updateRequestStatus
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: status
+          in: query
+          required: true
+          description: Request status
+          schema:
+            type: string
+            enum:
+              - NEW
+              - DENIED
+              - ACCEPTED
+              - AUTO_DENIED
+      responses:
+        "200":
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+
+components:
+  schemas:
+    Voice:
+      description: AI Voice
+      type: object
+      properties:
+        voiceId:
+          description: id of voice
+          type: string
+          example: "31kmadlkjmMM241adwa2"
+        name:
+          description: name of voice
+          type: string
+          example: "name"
+        category:
+          description: category of voice
+          type: string
+          example: "premade"
+    RequestPageable:
+      description: Pageable request
+      type: object
+      properties:
+        page:
+          description: page
+          type: integer
+          format: int32
+          example: 0
+        size:
+          description: size
+          type: integer
+          format: int32
+          example: 10
+    Request:
+      description: TTS request
+      type: object
+      properties:
+        id:
+          description: id
+          type: integer
+          format: int64
+          example: 123
+        message:
+          description: TTS text message
+          type: string
+          example: "hello world"
+        voiceType:
+          description: Voice type
+          type: string
+          example: "Adam"
+        requester:
+          description: Requester of TTS
+          type: string
+          example: "RequesterUsername"
+        submitter:
+          description: submitter
+          type: string
+          example: "SubmitterUsername"
+        RequestStatus:
+          description: Request status
+          type: string
+          enum:
+            - NEW
+            - DENIED
+            - ACCEPTED
+            - AUTO_DENIED
+        dateOfCreation:
+          type: string
+          format: date-time
+          description: Creation date and time
+          example: "2021-01-30T08:30:00Z"
+    RequestPage:
+      description: Request page
+      type: object
+      required:
+        - totalNumberOfPages
+        - totalNumberOfElements
+        - requests
+      properties:
+        totalNumberOfPages:
+          description: Total number of pages
+          type: integer
+          format: int32
+          example: 123
+        totalNumberOfElements:
+          description: Total number of pages
+          type: integer
+          format: int32
+          example: 123
+        requests:
+          description: Retrieved requests
+          type: array
+          items:
+            $ref: "#/components/schemas/Request"

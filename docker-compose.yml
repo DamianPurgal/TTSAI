@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+
+  postgresDB:
+    image: postgres:14.4
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: "229grAFOaKM6QFb5Tzdd9L"
+      POSTGRES_USER: "ttsaiadmin"
+      POSTGRES_DB: "ttsai"
