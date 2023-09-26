@@ -4,6 +4,7 @@ import com.deemor.TTSAI.model.RequestModelApi;
 import com.deemor.TTSAI.model.RequestPageModelApi;
 import com.deemor.ttsai.dto.request.RequestDto;
 import com.deemor.ttsai.dto.request.RequestPage;
+import com.deemor.ttsai.entity.alert.Alert;
 import com.deemor.ttsai.entity.request.Request;
 import org.mapstruct.Mapper;
 import org.mapstruct.NullValuePropertyMappingStrategy;
@@ -28,4 +29,6 @@ public interface RequestMapper {
     List<RequestModelApi> mapDtoToModelApi(List<RequestDto> request);
 
     RequestPageModelApi mapRequestPageToModelApi(RequestPage requestPage);
+
+    Alert mapToAlert(Request request);
 }

@@ -1,19 +1,20 @@
-package com.deemor.ttsai.entity.request;
+package com.deemor.ttsai.entity.alert;
 
+import com.deemor.ttsai.entity.audiofile.AudioFile;
 import lombok.*;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "REQUEST")
+@Table(name = "ALERT")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Request implements Serializable {
+public class Alert {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,9 +35,13 @@ public class Request implements Serializable {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS")
-    private RequestStatus requestStatus;
+    private AlertStatus alertStatus;
 
     @Column(name = "DATE_OF_CREATION")
     private LocalDateTime dateOfCreation;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "AUDIO_FILE_ID", referencedColumnName = "id")
+    private AudioFile audioFile;
 
 }

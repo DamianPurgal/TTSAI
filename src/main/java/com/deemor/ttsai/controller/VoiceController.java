@@ -2,7 +2,9 @@ package com.deemor.ttsai.controller;
 
 import com.deemor.TTSAI.model.VoiceModelApi;
 import com.deemor.ttsai.mapper.ElevenlabsMapper;
+import com.deemor.ttsai.mapper.VoiceMapper;
 import com.deemor.ttsai.service.elevenlabs.ElevenlabsService;
+import com.deemor.ttsai.service.voice.VoiceService;
 import lombok.RequiredArgsConstructor;
 import com.deemor.TTSAI.api.VoiceApi;
 import org.springframework.http.ResponseEntity;
@@ -16,14 +18,20 @@ import java.util.List;
 @CrossOrigin
 public class VoiceController implements VoiceApi {
 
-    private final ElevenlabsService elevenlabsService;
-    private final ElevenlabsMapper elevenlabsMapper;
+    private final VoiceService voiceService;
+    private final VoiceMapper voiceMapper;
 
     @Override
     public ResponseEntity<List<VoiceModelApi>> getAllVoices() {
         return ResponseEntity.ok().body(
-                elevenlabsMapper.mapListVoiceDtoToModelApi(elevenlabsService.getAllVoices())
+                voiceMapper.mapListVoiceDtoToModelApi(voiceService.getAllVoices())
         );
     }
 
+    @Override
+    public ResponseEntity<List<VoiceModelApi>> refreshAndGetVoices() {
+        return ResponseEntity.ok().body(
+                voiceMapper.mapListVoiceDtoToModelApi(voiceService.refreshAndGetVoices())
+        );
+    }
 }

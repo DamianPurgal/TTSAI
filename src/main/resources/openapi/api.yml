@@ -24,6 +24,22 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Voice'
+  /voice/refresh:
+    get:
+      summary: Refresh and get voices
+      tags:
+        - "Voice"
+      operationId: refreshAndGetVoices
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Voice'
+
   /request:
     get:
       summary: Get all requests
@@ -181,6 +197,7 @@ components:
             - DENIED
             - ACCEPTED
             - AUTO_DENIED
+            - TTS_ERROR
         dateOfCreation:
           type: string
           format: date-time

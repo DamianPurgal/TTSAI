@@ -2,6 +2,8 @@ package com.deemor.ttsai.service.elevenlabs;
 
 import com.deemor.ttsai.dto.VoiceDto;
 import com.deemor.ttsai.mapper.ElevenlabsMapper;
+import com.deemor.ttsai.mapper.VoiceMapper;
+import com.deemor.ttsai.repository.AiVoiceRepository;
 import lombok.AllArgsConstructor;
 import net.andrewcpu.elevenlabs.model.voice.Voice;
 import org.springframework.stereotype.Service;
@@ -14,10 +16,11 @@ import java.util.List;
 public class ElevenlabsService {
 
     private final ElevenlabsMapper elevenlabsMapper;
+    private final VoiceMapper voiceMapper;
+    private final AiVoiceRepository aiVoiceRepository;
 
     public List<VoiceDto> getAllVoices() {
-        List<Voice> voices = Voice.getVoices();
-        return elevenlabsMapper.mapListVoiceToDto(voices);
+        return voiceMapper.mapToDto(aiVoiceRepository.findAll());
     }
 
     public void tts() {
@@ -26,7 +29,7 @@ public class ElevenlabsService {
         int i = 4;
     }
 
-    private Voice getVoiceById(String id) {
+    public Voice getVoiceById(String id) {
         return Voice.getVoice(id);
     }
 }

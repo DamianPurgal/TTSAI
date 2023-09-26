@@ -10,3 +10,8 @@ services:
       POSTGRES_PASSWORD: "229grAFOaKM6QFb5Tzdd9L"
       POSTGRES_USER: "ttsaiadmin"
       POSTGRES_DB: "ttsai"
+  rabbitmq:
+    image: rabbitmq:management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
