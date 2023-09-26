@@ -5,6 +5,7 @@ info:
 tags:
   - name: "Voice"
   - name: "Request"
+  - name: "Alert"
 servers:
   - url: "http://localhost:8080"
     description: "Local server"
@@ -131,6 +132,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Request'
+  /alert:
+    get:
+      summary: Get all alerts
+      tags:
+        - "Alert"
+      operationId: getAlertsPageable
+      parameters:
+        - name: requestDto
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/RequestPageable'
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertPage'
+  /alert/{alertId}:
+    get:
+      summary: Get alert by id
+      tags:
+        - "Alert"
+      operationId: getAlertById
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
 
 components:
   schemas:
@@ -226,3 +266,71 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Request"
+    Alert:
+      description: Alert
+      type: object
+      properties:
+        id:
+          description: id
+          type: integer
+          format: int64
+          example: 123
+        message:
+          description: TTS text message
+          type: string
+          example: "hello world"
+        voiceType:
+          description: Voice type
+          type: string
+          example: "Adam"
+        requester:
+          description: Requester of TTS
+          type: string
+          example: "RequesterUsername"
+        submitter:
+          description: submitter
+          type: string
+          example: "SubmitterUsername"
+        alertStatus:
+          description: Alert status
+          type: string
+          enum:
+            - NEW
+            - READY_TO_DISPLAY
+            - DISPLAYED
+        dateOfCreation:
+          type: string
+          format: date-time
+          description: Creation date and time
+          example: "2021-01-30T08:30:00Z"
+        audioFile:
+          type: string
+          format: byte
+          description: audio file
+        fileType:
+          type: string
+          description: format of audio file
+          example: "mp3"
+    AlertPage:
+      description: Alert page
+      type: object
+      required:
+        - totalNumberOfPages
+        - totalNumberOfElements
+        - alerts
+      properties:
+        totalNumberOfPages:
+          description: Total number of pages
+          type: integer
+          format: int32
+          example: 123
+        totalNumberOfElements:
+          description: Total number of pages
+          type: integer
+          format: int32
+          example: 123
+        requests:
+          description: Retrieved alerts
+          type: array
+          items:
+            $ref: "#/components/schemas/Alert"

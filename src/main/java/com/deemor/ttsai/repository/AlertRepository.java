@@ -1,9 +1,14 @@
 package com.deemor.ttsai.repository;
 
 import com.deemor.ttsai.entity.alert.Alert;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.deemor.ttsai.entity.alert.AlertStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface AlertRepository extends JpaRepository<Alert, Long> {
+public interface AlertRepository extends PagingAndSortingRepository<Alert, Long> {
+
+    Page<Alert> findAllByAlertStatus(AlertStatus status, Pageable pageable);
 }
