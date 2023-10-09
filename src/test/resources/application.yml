@@ -1,0 +1,25 @@
+spring:
+  config:
+    activate:
+      on-profile: development
+  datasource:
+    driver-class-name: org.h2.Driver
+    username: sa
+    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+    password: sa
+  jpa:
+    properties:
+      hibernate:
+        show_sql: 'false'
+    generate-ddl: false
+  rabbitmq:
+    host: localhost
+application:
+  jwt:
+    tokenPrefix: Bearer
+    secretKeyRefreshToken: a59aAD6&^z3HOaum*G2jrJz86zfpB2L4@5!im%nbeRb*rs0rdzL4@5!im%nbeRb*rs0rdz
+    accessTokenExpirationTimeInDays: '10'
+    secretKeyAccessToken: aRyn!%62M2K3%9avIZetx1DMi2&hXCW6^EwbsetZ!#oYXSYC*B5Ryn!%62M2K3%9avIZetx1DMi2&hXCW6^EwbsetZ!#oYXSYC*B
+    refreshTokenExpirationTimeInDays: '30'
+  elevenlabs:
+    apiKey: 04971c8e055966099ecacedc279d0e1e
