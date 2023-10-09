@@ -171,6 +171,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Alert'
+  /alert/latest:
+    get:
+      summary: Get latest not displayed alert
+      tags:
+        - "Alert"
+      operationId: getAlertLatest
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alert'
 
 components:
   schemas:
@@ -238,6 +251,7 @@ components:
             - ACCEPTED
             - AUTO_DENIED
             - TTS_ERROR
+            - AUTO_ACCEPTED
         dateOfCreation:
           type: string
           format: date-time

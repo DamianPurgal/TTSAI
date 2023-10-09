@@ -5,5 +5,6 @@ public enum RequestStatus {
     DENIED,
     ACCEPTED,
     AUTO_DENIED,
-    TTS_ERROR
+    TTS_ERROR,
+    AUTO_ACCEPTED,
 }

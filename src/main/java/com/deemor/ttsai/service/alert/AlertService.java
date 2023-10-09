@@ -23,6 +23,7 @@ import com.deemor.ttsai.repository.RequestRepository;
 import com.deemor.ttsai.service.elevenlabs.ElevenlabsService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.andrewcpu.elevenlabs.ElevenLabs;
 import net.andrewcpu.elevenlabs.model.voice.Voice;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -72,7 +73,7 @@ public class AlertService {
         Alert alert = requestMapper.mapToAlert(request);
         InputStream generatedAudioFile;
         try {
-            generatedAudioFile = voice.generateStream(request.getMessage());
+            generatedAudioFile = voice.generateStream(request.getMessage(), "eleven_multilingual_v2");
         } catch (Exception exception) {
             log.warn("ElevenLabs connection error [generate audio file]");
             return;
@@ -110,6 +111,13 @@ public class AlertService {
         result.setTotalNumberOfElements(Long.valueOf(page.getTotalElements()).intValue());
 
         return result;
+    }
+
+    public AlertDto getAlertLatest() {
+        Alert alert = alertRepository.findFirstByAlertStatusOrderByDateOfCreationAsc(AlertStatus.NEW).orElseThrow(AlertNotFoundException::new);
+        alert.setAlertStatus(AlertStatus.DISPLAYED);
+        alert = alertRepository.save(alert);
+        return alertMapper.mapToDto(alert);
     }
 
 }

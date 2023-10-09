@@ -32,4 +32,12 @@ public class AlertController implements AlertApi {
                 alertMapper.mapPageToModelApi(alertService.getAlertsPageable(requestDto.getPage(), requestDto.getSize()))
         );
     }
+
+    @Override
+    public ResponseEntity<AlertModelApi> getAlertLatest() {
+        return ResponseEntity.ok().body(
+                alertMapper.mapModelApiToDto(alertService.getAlertLatest())
+        );
+    }
+
 }

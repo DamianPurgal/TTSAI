@@ -16,7 +16,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        show_sql: 'true'
+        show_sql: 'false'
     generate-ddl: false
 application:
   jwt:
@@ -42,7 +42,7 @@ spring:
   jpa:
     properties:
       hibernate:
-        show_sql: 'true'
+        show_sql: 'false'
     generate-ddl: false
 application:
   jwt:
