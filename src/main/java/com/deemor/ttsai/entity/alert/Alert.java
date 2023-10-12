@@ -1,11 +1,14 @@
 package com.deemor.ttsai.entity.alert;
 
-import com.deemor.ttsai.entity.audiofile.AudioFile;
+import com.deemor.ttsai.converter.ConversationListConverter;
+import com.deemor.ttsai.entity.conversation.Conversation;
+import com.deemor.ttsai.entity.alertevent.AlertEvent;
 import lombok.*;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "ALERT")
@@ -21,12 +24,6 @@ public class Alert {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "MESSAGE")
-    private String message;
-
-    @Column(name = "VOICE_TYPE")
-    private String voiceType;
-
     @Column(name = "REQUESTER")
     private String requester;
 
@@ -40,8 +37,11 @@ public class Alert {
     @Column(name = "DATE_OF_CREATION")
     private LocalDateTime dateOfCreation;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "AUDIO_FILE_ID", referencedColumnName = "id")
-    private AudioFile audioFile;
+    @OneToMany(mappedBy="alert", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private List<AlertEvent> alertEvents = new ArrayList<>();
+
+    @Column(name = "CONVERSATION")
+    @Convert(converter = ConversationListConverter.class)
+    private List<Conversation> conversation = new ArrayList<>();
 
 }

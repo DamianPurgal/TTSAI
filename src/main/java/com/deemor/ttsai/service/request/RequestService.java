@@ -1,19 +1,17 @@
 package com.deemor.ttsai.service.request;
 
 import com.deemor.ttsai.configuration.RabbitMqConfiguration;
+import com.deemor.ttsai.dto.conversation.ConversationDto;
 import com.deemor.ttsai.dto.request.RequestDto;
 import com.deemor.ttsai.dto.request.RequestPage;
-import com.deemor.ttsai.entity.alert.Alert;
-import com.deemor.ttsai.entity.alert.AlertStatus;
 import com.deemor.ttsai.entity.request.Request;
 import com.deemor.ttsai.entity.request.RequestStatus;
 import com.deemor.ttsai.exception.request.RequestNotFoundException;
-import com.deemor.ttsai.exception.request.RequestNotValidException;
 import com.deemor.ttsai.exception.voice.AiVoiceNotFoundException;
 import com.deemor.ttsai.mapper.RequestMapper;
 import com.deemor.ttsai.repository.AiVoiceRepository;
-import com.deemor.ttsai.repository.AlertRepository;
 import com.deemor.ttsai.repository.RequestRepository;
+import com.deemor.ttsai.service.request.util.RequestServiceUtil;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -22,7 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -30,7 +28,6 @@ import java.util.Optional;
 public class RequestService {
 
     private final RequestRepository requestRepository;
-    private final AlertRepository alertRepository;
     private final RequestMapper requestMapper;
     private final RabbitTemplate template;
     private final AiVoiceRepository aiVoiceRepository;
@@ -49,26 +46,23 @@ public class RequestService {
     //DISCROD VERSION
     public RequestDto addRequest(RequestDto requestDto) {
         validateRequest(requestDto);
+        requestDto.getConversation().forEach(message -> message.setVoiceType(message.getVoiceType().toUpperCase()));
+
         Request request = requestMapper.mapToEntity(requestDto);
-
         request.setRequestStatus(RequestStatus.ACCEPTED);
-        aiVoiceRepository.findFirstByName(request.getVoiceType()).orElseThrow(AiVoiceNotFoundException::new);
-
         Request savedRequest = requestRepository.save(request);
 
-        template.convertAndSend(RabbitMqConfiguration.REQUEST_TO_ALERT_QUEUE_NAME, request);
-
+        template.convertAndSend(RabbitMqConfiguration.REQUEST_TO_ALERT_QUEUE_NAME, savedRequest);
         return requestMapper.mapToDto(savedRequest);
     }
 
     private void validateRequest(RequestDto request) {
-        if (request != null) {
-            if (request.getMessage().isBlank()) {
-                throw new RequestNotValidException("Message not valid. Message is blank.");
-            }
-        } else {
-            throw new RequestNotValidException("message is null");
-        }
+        RequestServiceUtil.validateConversation(request.getConversation());
+        request.getConversation().stream()
+                .map(ConversationDto::getVoiceType)
+                .map(String::toUpperCase)
+                .collect(Collectors.toSet())
+                .forEach(voice -> aiVoiceRepository.findFirstByName(voice).orElseThrow(AiVoiceNotFoundException::new));
     }
 
     public void deleteRequestById(Long requestId) {

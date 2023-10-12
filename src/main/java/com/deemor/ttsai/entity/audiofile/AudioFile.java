@@ -23,11 +23,14 @@ public class AudioFile {
     @Column(name = "FILE_TYPE")
     private String fileType;
 
+    @Column(name = "MESSAGE")
+    private String message;
+
+    @Column(name = "VOICE_TYPE")
+    private String voiceType;
+
     @Lob
     @Type(type = "org.hibernate.type.BinaryType")
     @Column(name = "FILE")
     private byte[] audioFile;
-
-    @OneToOne(mappedBy = "audioFile")
-    private Alert alert;
 }

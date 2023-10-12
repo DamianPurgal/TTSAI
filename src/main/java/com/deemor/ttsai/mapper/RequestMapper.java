@@ -23,20 +23,18 @@ public interface RequestMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "dateOfCreation", expression = "java(LocalDateTime.now())")
-    @Mapping(target = "voiceType", expression = "java(request.getVoiceType().toUpperCase())")
     @Mapping(target = "requestStatus", constant = "NEW")
     Request mapToEntity(RequestDto request);
 
-    @Mapping(target = "voiceType", expression = "java(requestModelApi.getVoiceType().toUpperCase())")
-    RequestDto mapDtoToModelApi(RequestModelApi requestModelApi);
+    RequestDto mapModelApiToDto(RequestModelApi requestModelApi);
 
     RequestDto mapToDto(Request request);
 
     List<RequestDto> mapToDto(List<Request> request);
 
-    RequestModelApi mapDtoToModelApi(RequestDto request);
+    RequestModelApi mapModelApiToDto(RequestDto request);
 
-    List<RequestModelApi> mapDtoToModelApi(List<RequestDto> request);
+    List<RequestModelApi> mapModelApiToDto(List<RequestDto> request);
 
     RequestPageModelApi mapRequestPageToModelApi(RequestPage requestPage);
 

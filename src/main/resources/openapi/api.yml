@@ -226,14 +226,6 @@ components:
           type: integer
           format: int64
           example: 123
-        message:
-          description: TTS text message
-          type: string
-          example: "hello world"
-        voiceType:
-          description: Voice type
-          type: string
-          example: "Adam"
         requester:
           description: Requester of TTS
           type: string
@@ -257,6 +249,11 @@ components:
           format: date-time
           description: Creation date and time
           example: "2021-01-30T08:30:00Z"
+        conversation:
+          description: conversation
+          type: array
+          items:
+            $ref: "#/components/schemas/Conversation"
     RequestPage:
       description: Request page
       type: object
@@ -289,14 +286,6 @@ components:
           type: integer
           format: int64
           example: 123
-        message:
-          description: TTS text message
-          type: string
-          example: "hello world"
-        voiceType:
-          description: Voice type
-          type: string
-          example: "Adam"
         requester:
           description: Requester of TTS
           type: string
@@ -317,6 +306,25 @@ components:
           format: date-time
           description: Creation date and time
           example: "2021-01-30T08:30:00Z"
+        conversation:
+          description: conversation
+          type: array
+          items:
+            $ref: "#/components/schemas/Conversation"
+        events:
+          description: Alert events
+          type: array
+          items:
+            $ref: "#/components/schemas/AlertEvent"
+    AlertEvent:
+      description: Audio message
+      type: object
+      properties:
+        orderIndex:
+          description: id
+          type: integer
+          format: int64
+          example: 123
         audioFile:
           type: string
           format: byte
@@ -325,6 +333,10 @@ components:
           type: string
           description: format of audio file
           example: "mp3"
+        voiceType:
+          description: Voice type
+          type: string
+          example: "Adam"
     AlertPage:
       description: Alert page
       type: object
@@ -348,3 +360,20 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Alert"
+    Conversation:
+      description: Conversation
+      type: object
+      properties:
+        orderIndex:
+          description: id
+          type: integer
+          format: int64
+          example: 123
+        message:
+          description: TTS text message
+          type: string
+          example: "test"
+        voiceType:
+          description: Voice type
+          type: string
+          example: "Adam"

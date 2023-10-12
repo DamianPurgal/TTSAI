@@ -16,6 +16,4 @@ public interface AlertRepository extends PagingAndSortingRepository<Alert, Long>
 
     Optional<Alert> findFirstByAlertStatusOrderByDateOfCreationAsc(AlertStatus status);
 
-    Optional<Alert> findFirstByVoiceTypeAndMessage(String voiceType, String message);
-
 }

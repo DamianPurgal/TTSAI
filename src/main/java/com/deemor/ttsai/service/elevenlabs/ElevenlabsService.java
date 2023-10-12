@@ -1,6 +1,7 @@
 package com.deemor.ttsai.service.elevenlabs;
 
 import com.deemor.ttsai.dto.VoiceDto;
+import com.deemor.ttsai.entity.voice.AiVoice;
 import com.deemor.ttsai.exception.elevenlabs.ElevenLabsConnectionException;
 import com.deemor.ttsai.exception.elevenlabs.ElevenLabsVoiceNotFoundException;
 import com.deemor.ttsai.mapper.VoiceMapper;
@@ -11,7 +12,10 @@ import net.andrewcpu.elevenlabs.model.voice.Voice;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -38,6 +42,27 @@ public class ElevenlabsService {
 
         try {
             return voice.generateStream(message, "eleven_multilingual_v2");
+        } catch (Exception exception) {
+            log.warn("ElevenLabs connection error [generate audio file]");
+            throw new ElevenLabsConnectionException();
+        }
+    }
+
+    public InputStream generateAudioFile(String message, Voice voice) {
+        try {
+            return voice.generateStream(message, "eleven_multilingual_v2");
+        } catch (Exception exception) {
+            log.warn("ElevenLabs connection error [generate audio file]");
+            throw new ElevenLabsConnectionException();
+        }
+    }
+
+    public Set<Voice> getVoices(Set<String> voiceIds) {
+        Set<Voice> voices = new HashSet<>();
+
+        try {
+            voiceIds.forEach(voiceId -> voices.add(Voice.getVoice(voiceId)));
+            return voices;
         } catch (Exception exception) {
             log.warn("ElevenLabs connection error [generate audio file]");
             throw new ElevenLabsConnectionException();

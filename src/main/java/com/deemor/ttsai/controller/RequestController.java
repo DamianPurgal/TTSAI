@@ -32,8 +32,8 @@ public class RequestController implements RequestApi {
     @Override
     public ResponseEntity<RequestModelApi> addRequest(RequestModelApi requestModelApi) {
         return ResponseEntity.ok().body(
-                requestMapper.mapDtoToModelApi(
-                        requestService.addRequest(requestMapper.mapDtoToModelApi(requestModelApi))
+                requestMapper.mapModelApiToDto(
+                        requestService.addRequest(requestMapper.mapModelApiToDto(requestModelApi))
                 )
         );
     }
@@ -54,7 +54,7 @@ public class RequestController implements RequestApi {
     public ResponseEntity<RequestModelApi> updateRequestStatus(Long requestId, String status) {
         RequestStatus requestStatus = RequestStatus.valueOf(status);
         return ResponseEntity.ok().body(
-                requestMapper.mapDtoToModelApi(
+                requestMapper.mapModelApiToDto(
                         requestService.updateRequestStatus(requestId, requestStatus)
                 )
         );

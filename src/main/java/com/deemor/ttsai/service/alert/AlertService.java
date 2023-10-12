@@ -5,7 +5,9 @@ import com.deemor.ttsai.dto.alert.AlertDto;
 import com.deemor.ttsai.dto.alert.AlertPage;
 import com.deemor.ttsai.entity.alert.Alert;
 import com.deemor.ttsai.entity.alert.AlertStatus;
+import com.deemor.ttsai.entity.alertevent.AlertEvent;
 import com.deemor.ttsai.entity.audiofile.AudioFile;
+import com.deemor.ttsai.entity.conversation.Conversation;
 import com.deemor.ttsai.entity.request.Request;
 import com.deemor.ttsai.entity.voice.AiVoice;
 import com.deemor.ttsai.exception.alert.AlertAudioFileException;
@@ -16,17 +18,27 @@ import com.deemor.ttsai.mapper.AlertMapper;
 import com.deemor.ttsai.mapper.RequestMapper;
 import com.deemor.ttsai.repository.AiVoiceRepository;
 import com.deemor.ttsai.repository.AlertRepository;
+import com.deemor.ttsai.repository.AudioFileRepository;
 import com.deemor.ttsai.repository.RequestRepository;
 import com.deemor.ttsai.service.elevenlabs.ElevenlabsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.andrewcpu.elevenlabs.model.voice.Voice;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -39,41 +51,103 @@ public class AlertService {
     private final AlertRepository alertRepository;
     private final RequestMapper requestMapper;
     private final AlertMapper alertMapper;
+    private final AudioFileRepository audioFileRepository;
 
     @RabbitListener(queues = RabbitMqConfiguration.REQUEST_TO_ALERT_QUEUE_NAME)
+    @Transactional
     public void listenRequestToAlertQueue(Request message) {
-        log.info(String.format("Message read from RequestToAlertQueue: %s, ID: %d", message.getMessage(), message.getId()));
+        log.info(String.format("Message read from RequestToAlertQueue, ID: %d", message.getId()));
 
         try {
             Request request = requestRepository.findById(message.getId()).orElseThrow(RequestNotFoundException::new);
-            AiVoice aiVoice = aiVoiceRepository.findFirstByName(request.getVoiceType()).orElseThrow(AiVoiceNotFoundException::new);
 
-            Alert alert = createAlert(request, aiVoice.getVoiceId());
-            alertRepository.save(alert);
+            Set<AiVoice> aiVoices = findAllVoicesOfConversation(message.getConversation());
+            Set<Voice> voices = elevenlabsService.getVoices(aiVoices.stream().map(aiVoice -> aiVoice.getVoiceId()).collect(Collectors.toSet()));
+
+            createAndSaveAlert(request, voices);
 
         } catch (Exception exception) {
-            log.info(String.format("[ALERT QUEUE] REQUEST_ID: %d, ERROR : %s", message.getId(), exception.getMessage()));
+            log.error(String.format("[ALERT QUEUE] REQUEST_ID: %d, ERROR : %s", message.getId(), exception.getMessage()));
         } finally {
-            log.info(String.format("Message processed: %s, ID: %d", message.getMessage(), message.getId()));
+            log.info(String.format("Message processed RequestToAlertQueue, ID: %d", message.getId()));
         }
     }
 
-    private Alert createAlert(Request request, String voiceId) {
-        Alert alert = requestMapper.mapToAlert(request);
+    private Set<AiVoice> findAllVoicesOfConversation(List<Conversation> conversation) {
+        Set<String> voices = conversation.stream()
+                .map(Conversation::getVoiceType)
+                .collect(Collectors.toSet());
 
-        try (InputStream audioFileInputStream = elevenlabsService.generateAudioFile(request.getMessage(), voiceId)) {
-            alert.setAudioFile(
-                    AudioFile.builder()
-                            .audioFile(audioFileInputStream.readAllBytes())
-                            .fileType("mp3_44100")
-                            .build()
-            );
+        Set<AiVoice> aiVoices = aiVoiceRepository.findAllByNameIn(voices);
+
+        if (aiVoices.size() != voices.size()) {
+            throw new AiVoiceNotFoundException();
+        }
+
+        return aiVoices;
+    }
+
+    private Alert createAndSaveAlert(Request request, Set<Voice> voices) {
+        Alert alert = requestMapper.mapToAlert(request);
+        alert.setAlertEvents(new ArrayList<>());
+        List<AudioFile> audioFiles = getAudioFiles(request.getConversation(), voices);
+
+        request.getConversation().forEach(element -> {
+            AlertEvent event = AlertEvent.builder()
+                    .id(null)
+                    .orderIndex(Long.valueOf(element.getOrderIndex()))
+                    .audioFile(
+                            audioFiles.stream()
+                                    .filter(audio -> audio.getMessage().equals(element.getMessage()))
+                                    .findFirst()
+                                    .orElseThrow(AlertAudioFileException::new)
+                    ).alert(alert)
+                    .build();
+            alert.getAlertEvents().add(event);
+        });
+
+        alert.setAlertStatus(AlertStatus.NEW);
+
+        return alertRepository.save(alert);
+    }
+
+    private List<AudioFile> getAudioFiles(List<Conversation> conversation, Set<Voice> voices) {
+        List<AudioFile> audioFiles = new ArrayList<>();
+
+        conversation.forEach(message -> {
+            Optional<AudioFile> foundAudioFile = audioFileRepository.findFirstByMessageAndVoiceType(message.getMessage(), message.getVoiceType());
+
+            if (foundAudioFile.isPresent()) {
+                audioFiles.add(foundAudioFile.get());
+                log.info(String.format("[GENERATE AUDIO] OPTIMIZED! AudioFile ID: %d", foundAudioFile.get().getId()));
+
+            } else {
+                AudioFile audioFile = generateAudioFile(
+                        message,
+                        voices.stream()
+                                .filter(element -> element.getName().toUpperCase().equals(message.getVoiceType()))
+                                .findFirst()
+                                .orElseThrow(AiVoiceNotFoundException::new)
+                );
+                audioFiles.add(audioFileRepository.save(audioFile));
+            }
+        });
+
+        return audioFiles;
+    }
+
+    public AudioFile generateAudioFile(Conversation conversation, Voice voice) {
+        try (InputStream audioFileInputStream = elevenlabsService.generateAudioFile(conversation.getMessage(), voice)) {
+            return AudioFile.builder()
+                    .audioFile(audioFileInputStream.readAllBytes())
+                    .message(conversation.getMessage())
+                    .voiceType(conversation.getVoiceType())
+                    .fileType("mp3_44100")
+                    .build();
+
         } catch (Exception exception) {
             throw new AlertAudioFileException();
         }
-
-        alert.setAlertStatus(AlertStatus.NEW);
-        return alert;
     }
 
     public AlertDto getAlertById(Long id) {
@@ -93,6 +167,7 @@ public class AlertService {
         return result;
     }
 
+    @Transactional
     public AlertDto getAlertLatest() {
         Alert alert = alertRepository.findFirstByAlertStatusOrderByDateOfCreationAsc(AlertStatus.NEW).orElseThrow(AlertNotFoundException::new);
         alert.setAlertStatus(AlertStatus.DISPLAYED);

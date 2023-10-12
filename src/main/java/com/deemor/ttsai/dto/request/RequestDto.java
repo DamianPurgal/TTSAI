@@ -1,11 +1,13 @@
 package com.deemor.ttsai.dto.request;
 
+import com.deemor.ttsai.dto.conversation.ConversationDto;
 import com.deemor.ttsai.entity.request.RequestStatus;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,4 +20,5 @@ public class RequestDto {
     private String submitter;
     private RequestStatus requestStatus;
     private LocalDateTime dateOfCreation;
+    private List<ConversationDto> conversation;
 }
