@@ -1,12 +1,10 @@
 package com.deemor.ttsai.controller;
 
+import com.deemor.TTSAI.api.VoiceApi;
 import com.deemor.TTSAI.model.VoiceModelApi;
-import com.deemor.ttsai.mapper.ElevenlabsMapper;
 import com.deemor.ttsai.mapper.VoiceMapper;
-import com.deemor.ttsai.service.elevenlabs.ElevenlabsService;
 import com.deemor.ttsai.service.voice.VoiceService;
 import lombok.RequiredArgsConstructor;
-import com.deemor.TTSAI.api.VoiceApi;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;

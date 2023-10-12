@@ -3,17 +3,14 @@ package com.deemor.ttsai.service.alert;
 import com.deemor.ttsai.configuration.RabbitMqConfiguration;
 import com.deemor.ttsai.dto.alert.AlertDto;
 import com.deemor.ttsai.dto.alert.AlertPage;
-import com.deemor.ttsai.dto.request.RequestPage;
 import com.deemor.ttsai.entity.alert.Alert;
 import com.deemor.ttsai.entity.alert.AlertStatus;
 import com.deemor.ttsai.entity.audiofile.AudioFile;
 import com.deemor.ttsai.entity.request.Request;
-import com.deemor.ttsai.entity.request.RequestStatus;
 import com.deemor.ttsai.entity.voice.AiVoice;
-import com.deemor.ttsai.exception.BusinessException;
+import com.deemor.ttsai.exception.alert.AlertAudioFileException;
 import com.deemor.ttsai.exception.alert.AlertNotFoundException;
 import com.deemor.ttsai.exception.request.RequestNotFoundException;
-import com.deemor.ttsai.exception.request.RequestToAlertConversionException;
 import com.deemor.ttsai.exception.voice.AiVoiceNotFoundException;
 import com.deemor.ttsai.mapper.AlertMapper;
 import com.deemor.ttsai.mapper.RequestMapper;
@@ -23,17 +20,12 @@ import com.deemor.ttsai.repository.RequestRepository;
 import com.deemor.ttsai.service.elevenlabs.ElevenlabsService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.andrewcpu.elevenlabs.ElevenLabs;
-import net.andrewcpu.elevenlabs.model.voice.Voice;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.InputStream;
 
 @Service
@@ -50,50 +42,38 @@ public class AlertService {
 
     @RabbitListener(queues = RabbitMqConfiguration.REQUEST_TO_ALERT_QUEUE_NAME)
     public void listenRequestToAlertQueue(Request message) {
-        log.info(String.format("Message read from RequestToAlertQueue: %s, ID: %o", message.getMessage(), message.getId()));
+        log.info(String.format("Message read from RequestToAlertQueue: %s, ID: %d", message.getMessage(), message.getId()));
 
-        Request request;
-        AiVoice aiVoice;
         try {
-            request = requestRepository.findById(message.getId()).orElseThrow(RequestNotFoundException::new);
-            aiVoice = aiVoiceRepository.findFirstByName(request.getVoiceType()).orElseThrow(AiVoiceNotFoundException::new);
-        } catch (Exception exception) {
-            log.warn("Cannot find request or voice: " + exception.getMessage());
-            return;
-        }
+            Request request = requestRepository.findById(message.getId()).orElseThrow(RequestNotFoundException::new);
+            AiVoice aiVoice = aiVoiceRepository.findFirstByName(request.getVoiceType()).orElseThrow(AiVoiceNotFoundException::new);
 
-        Voice voice;
-        try {
-            voice = elevenlabsService.getVoiceById(aiVoice.getVoiceId());
-        } catch (Exception exception) {
-            log.warn("ElevenLabs connection error [get voice]");
-            return;
-        }
+            Alert alert = createAlert(request, aiVoice.getVoiceId());
+            alertRepository.save(alert);
 
+        } catch (Exception exception) {
+            log.info(String.format("[ALERT QUEUE] REQUEST_ID: %d, ERROR : %s", message.getId(), exception.getMessage()));
+        } finally {
+            log.info(String.format("Message processed: %s, ID: %d", message.getMessage(), message.getId()));
+        }
+    }
+
+    private Alert createAlert(Request request, String voiceId) {
         Alert alert = requestMapper.mapToAlert(request);
-        InputStream generatedAudioFile;
-        try {
-            generatedAudioFile = voice.generateStream(request.getMessage(), "eleven_multilingual_v2");
-        } catch (Exception exception) {
-            log.warn("ElevenLabs connection error [generate audio file]");
-            return;
-        }
 
-        try {
+        try (InputStream audioFileInputStream = elevenlabsService.generateAudioFile(request.getMessage(), voiceId)) {
             alert.setAudioFile(
                     AudioFile.builder()
-                            .audioFile(generatedAudioFile.readAllBytes())
+                            .audioFile(audioFileInputStream.readAllBytes())
                             .fileType("mp3_44100")
                             .build()
             );
         } catch (Exception exception) {
-            log.warn("Read generated audio file error");
-            return;
+            throw new AlertAudioFileException();
         }
 
-        log.info("New alert saved");
         alert.setAlertStatus(AlertStatus.NEW);
-        alertRepository.save(alert);
+        return alert;
     }
 
     public AlertDto getAlertById(Long id) {
@@ -103,7 +83,7 @@ public class AlertService {
     }
 
     public AlertPage getAlertsPageable(Integer pageNumber, Integer itemsPerPage) {
-        Page<Alert> page = alertRepository.findAllByAlertStatus(AlertStatus.NEW , PageRequest.of(pageNumber, itemsPerPage, Sort.by("id").descending()));
+        Page<Alert> page = alertRepository.findAllByAlertStatus(AlertStatus.NEW, PageRequest.of(pageNumber, itemsPerPage, Sort.by("id").descending()));
 
         AlertPage result = new AlertPage();
         result.setRequests(alertMapper.mapToDto(page.getContent()));
