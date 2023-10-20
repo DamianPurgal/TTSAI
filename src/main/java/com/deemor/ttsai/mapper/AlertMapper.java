@@ -10,7 +10,6 @@ import com.deemor.ttsai.entity.alert.Alert;
 import org.mapstruct.*;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 @Mapper(componentModel = "spring",

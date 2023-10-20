@@ -27,7 +27,7 @@ application:
     secretKeyAccessToken: aRyn!%62M2K3%9avIZetx1DMi2&hXCW6^EwbsetZ!#oYXSYC*B5Ryn!%62M2K3%9avIZetx1DMi2&hXCW6^EwbsetZ!#oYXSYC*B
     refreshTokenExpirationTimeInDays: '30'
   elevenlabs:
-    apiKey: 04971c8e055966099ecacedc279d0e1e
+    apiKey: [api_key]
 
 
 ---
@@ -56,4 +56,4 @@ application:
     secretKeyAccessToken: aRyn!%62M2K3%9avIZetx1DMi2&hXCW6^EwbsetZ!#oYXSYC*B5Ryn!%62M2K3%9avIZetx1DMi2&hXCW6^EwbsetZ!#oYXSYC*B
     refreshTokenExpirationTimeInDays: '30'
   elevenlabs:
-    apiKey: 04971c8e055966099ecacedc279d0e1e
+    apiKey: [api_key]

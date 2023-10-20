@@ -1,6 +1,5 @@
 package com.deemor.ttsai.mapper;
 
-import com.deemor.TTSAI.model.VoiceModelApi;
 import com.deemor.ttsai.dto.VoiceDto;
 import net.andrewcpu.elevenlabs.model.voice.Voice;
 import org.mapstruct.Mapper;
@@ -16,5 +15,6 @@ import java.util.List;
 public interface ElevenlabsMapper {
 
     VoiceDto mapVoiceToDto(Voice voice);
+
     List<VoiceDto> mapListVoiceToDto(List<Voice> voice);
 }
