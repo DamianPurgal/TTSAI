@@ -12,6 +12,6 @@ import java.util.Set;
 public interface AiVoiceRepository extends JpaRepository<AiVoice, Long> {
     Optional<AiVoice> findAiVoiceByVoiceId(String voiceId);
     Optional<AiVoice> findFirstByName(String name);
-
     Set<AiVoice> findAllByNameIn(Set<String> names);
+
 }

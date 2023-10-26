@@ -11,9 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface AlertRepository extends PagingAndSortingRepository<Alert, Long> {
-
     Page<Alert> findAllByAlertStatus(AlertStatus status, Pageable pageable);
-
     Optional<Alert> findFirstByAlertStatusOrderByDateOfCreationAsc(AlertStatus status);
 
 }

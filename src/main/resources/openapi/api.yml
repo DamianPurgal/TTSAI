@@ -10,7 +10,7 @@ servers:
   - url: "http://localhost:8080"
     description: "Local server"
 paths:
-  /voice:
+  /voices:
     get:
       summary: Get all avaliable voices
       tags:
@@ -25,7 +25,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Voice'
-  /voice/refresh:
+  /voices/refresh:
     get:
       summary: Refresh and get voices
       tags:
@@ -41,7 +41,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/Voice'
 
-  /request:
+  /requests:
     get:
       summary: Get all requests
       tags:
@@ -85,7 +85,7 @@ paths:
       responses:
         "200":
           description: "OK"
-  /request/{requestId}:
+  /requests/{requestId}:
     delete:
       summary: Delete request by id
       tags:
@@ -101,7 +101,7 @@ paths:
       responses:
         "200":
           description: "OK"
-  /request/{requestId}/status:
+  /requests/{requestId}/status:
     put:
       summary: Change request status
       tags:
@@ -132,7 +132,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Request'
-  /alert:
+  /alerts:
     get:
       summary: Get all alerts
       tags:
@@ -151,7 +151,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AlertPage'
-  /alert/{alertId}:
+  /alerts/{alertId}:
     get:
       summary: Get alert by id
       tags:
@@ -171,7 +171,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Alert'
-  /alert/latest:
+  /alerts/latest:
     get:
       summary: Get latest not displayed alert
       tags:

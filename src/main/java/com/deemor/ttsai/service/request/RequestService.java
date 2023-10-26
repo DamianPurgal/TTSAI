@@ -43,7 +43,6 @@ public class RequestService {
         return result;
     }
 
-    //DISCROD VERSION
     public RequestDto addRequest(RequestDto requestDto) {
         validateRequest(requestDto);
         requestDto.getConversation().forEach(message -> message.setVoiceType(message.getVoiceType().toUpperCase()));

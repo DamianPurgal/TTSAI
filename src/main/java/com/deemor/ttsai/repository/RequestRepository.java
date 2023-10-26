@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RequestRepository extends PagingAndSortingRepository<Request, Long> {
-
     Page<Request> findAllByRequestStatus(RequestStatus status, Pageable pageable);
+
 }
